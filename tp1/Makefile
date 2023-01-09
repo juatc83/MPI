@@ -4,12 +4,12 @@
 ## Auteur          : Denis Girou (CNRS/IDRIS) <Denis.Girou@idris.fr>
 ###############################################################################
 
-# Compilateurs, options de compilation et d'édition de liens
+# Compilateurs, options de compilation et d'Ã©dition de liens
 include ../arch/make_inc
 
 OBJS = pair_impair.o
 
-# Règle implicite de compilation
+# RÃ¨gle implicite de compilation
 .SUFFIXES: .o .f90
 .f90.o:
 	$(CF95) -c $(FFLAGS_TP1) $<
