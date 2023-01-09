@@ -1,6 +1,6 @@
 ############################ -*- Mode: Makefile -*- ###########################
-# make_linux_mpich2_g95 --- Déclarations pour la génération et l'exécution des TPs MPI
-#                  sur un système Linux avec une distribution  OpenMPI et le compilateur G95
+# make_linux_mpich2_g95 --- DÃ©clarations pour la gÃ©nÃ©ration et l'exÃ©cution des TPs MPI
+#                  sur un systÃ¨me Linux avec une distribution  OpenMPI et le compilateur G95
 #
 # Auteur          : Denis Girou (CNRS/IDRIS) <Denis.Girou@idris.fr>
 #
@@ -10,7 +10,7 @@
 CF95            = mpif90
 CC              = gcc
 
-# Options de compilation et d'édition de liens
+# Options de compilation et d'Ã©dition de liens
 FFLAGS_TP1      = 
 LDFLAGS_TP1     =
 FFLAGS_TP2      = 
@@ -29,7 +29,7 @@ LDCFLAGS        = -lX11
 FFLAGS_TP8      = 
 LDFLAGS_TP8     =
 
-# Exécutions
+# ExÃ©cutions
 MPIEXEC_TP1     = mpiexec -n 4
 MPIEXEC_TP2     = mpiexec -n 2
 MPIEXEC_TP3     = mpiexec -n 6
