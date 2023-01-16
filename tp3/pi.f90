@@ -16,7 +16,7 @@ program reduce
   ! largeur des intervalles
   largeur = 1._dp / real(nbbloc,dp)
 
-  longueur_tranche = nbbloc/real(nbbloc,dp)
+  longueur_tranche = nbbloc/real(nb_procs,dp)
 
   somme = 0._dp
 
