@@ -7,9 +7,9 @@
 ! Remarques :
 ! ---------
 !
-!   * On veut réaliser le produit de matrices C = A * B en parallèle.
+!   * On veut rï¿½aliser le produit de matrices C = A * B en parallï¿½le.
 !
-!   * On suppose que ces matrices sont carrées et que leur ordre N
+!   * On suppose que ces matrices sont carrï¿½es et que leur ordre N
 !     est divisible par le nombre Nprocs de processus.
 !
 !   * Le processus 0 initialise les matrices A et B qu'il distribue
@@ -18,14 +18,14 @@
 !   * La distribution de A se fait par bandes horizontales.
 !     La distribution de B se fait par bandes verticales.
 !
-!   * Chaque processus possède une bande des matrices A et B.
+!   * Chaque processus possï¿½de une bande des matrices A et B.
 !
 !   * Chaque processus calcule ainsi un bloc de la diagonale principale
-!     de C avec les éléments qu'il possède. Le calcul des blocs
-!     extra-diagonaux nécessite des communications avec les autres
+!     de C avec les ï¿½lï¿½ments qu'il possï¿½de. Le calcul des blocs
+!     extra-diagonaux nï¿½cessite des communications avec les autres
 !     processus.
 !
-!   * En fait, l'opération se reduit ici à un produit de matrices par bloc.
+!   * En fait, l'opï¿½ration se reduit ici ï¿½ un produit de matrices par bloc.
 
 program produit_matrices
 
@@ -49,23 +49,23 @@ program produit_matrices
   if (rang == 0) then
     print *, 'Entrez l''ordre N global des matrices :'
     read *,N
-  end if
 
-  ! Le processus 0 diffuse N à tous les autres processus
+    ! Il faut que N soit divisible par Nprocs
+    if ( mod(N, Nprocs) == 0 ) then
+      NL = N / Nprocs
+
+      ! Le processus 0 diffuse N ï¿½ tous les autres processus
   
-
-  ! Il faut que N soit divisible par Nprocs
-  if ( mod(N, Nprocs) == 0 ) then
-    NL = N / Nprocs
-  else
-    print *, 'N n''est pas divisible par Nprocs'
-    ! On arrete l'execution
-    
+    else
+      print *, 'N n''est pas divisible par Nprocs'
+      ! On arrete l'execution
+      
+    end if
   end if
 
   ! Le processus 0 initialise les matrices A et B
   if (rang == 0) then
-    ! Allocation dynamique de mémoire, entre autres, des matrices A, B et C
+    ! Allocation dynamique de mï¿½moire, entre autres, des matrices A, B et C
     allocate( A(N,N), B(N,N), C(N,N), CC(N,N) )
 
     ! Initialisation de A et B
@@ -77,7 +77,7 @@ program produit_matrices
 
   end if
 
-  ! Allocation dynamique de mémoire des divers tableaux locaux
+  ! Allocation dynamique de mï¿½moire des divers tableaux locaux
   allocate( AL(NL,N), BL(N,NL), CL(N,NL), TEMP(NL,N) )
 
   call MPI_TYPE_SIZE(MPI_REAL, taille_type_reel, code)
@@ -94,14 +94,14 @@ program produit_matrices
   ! Calcul des blocs diagonaux de la matrice resultante.
   CL(rang*NL+1:(rang+1)*NL,:) = matmul( AL(:,:), BL(:,:) )
 
-  ! Premier algorithme (deux fois plus coûteux que le second)
+  ! Premier algorithme (deux fois plus coï¿½teux que le second)
   do k = 0, Nprocs-1
     ! Chaque processus ENVOIE sa tranche AL au processus k
-    ! et REÇOIT dans TEMP la tranche AL du processus k
+    ! et REï¿½OIT dans TEMP la tranche AL du processus k
     if (rang /= k) then
 
 
-      ! Chaque processus calcule les blocs situés au-dessus
+      ! Chaque processus calcule les blocs situï¿½s au-dessus
       ! et en dessous du bloc de la diagonale principale
       CL(k*NL+1:(k+1)*NL,:)=matmul(TEMP(:,:),BL(:,:))
     end if
@@ -111,23 +111,23 @@ program produit_matrices
 !  rang_precedent = mod(Nprocs+rang-1,Nprocs)
 !  rang_suivant   = mod(rang+1,Nprocs)
 !  do k = 1, Nprocs-1
-!    ! Chaque processus ENVOIE sa tranche AL au processus précédent
-!    ! et REÇOIT la tranche AL du processus suivant (mais les contenus changent)
+!    ! Chaque processus ENVOIE sa tranche AL au processus prï¿½cï¿½dent
+!    ! et REï¿½OIT la tranche AL du processus suivant (mais les contenus changent)
 ! 
 !
-!    ! Chaque processus calcule les blocs situés au-dessus
+!    ! Chaque processus calcule les blocs situï¿½s au-dessus
 !    ! et en dessous du bloc de la diagonale principale
 !    CL(mod(rang+k,Nprocs)*NL+1:(mod(rang+k,Nprocs)+1)*NL,:)=matmul(AL(:,:),BL(:,:))
 !  end do
 
   ! Le processus 0 collecte les tranches CL de tous les processus
-  ! pour former la matrice résultante C
+  ! pour former la matrice rï¿½sultante C
   
 
-  ! Les tableaux locaux sont désormais inutiles
+  ! Les tableaux locaux sont dï¿½sormais inutiles
   deallocate( AL, BL, CL, TEMP )
 
-  ! Vérification des résultats
+  ! Vï¿½rification des rï¿½sultats
   if (rang == 0) then
     allocate( E(N,N) )
     E(:,:) = abs(C(:,:) - CC(:,:))
