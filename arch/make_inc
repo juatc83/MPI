@@ -32,10 +32,10 @@ LDFLAGS_TP8     =
 # Exécutions
 MPIEXEC_TP1     = mpiexec -n 4
 MPIEXEC_TP2     = mpiexec -n 2
-MPIEXEC_TP3     = mpiexec -n 6
+MPIEXEC_TP3     = mpiexec --use-hwthread-cpus -n 8
 MPIEXEC_TP4     = mpiexec -n 2
 MPIEXEC_TP5     = mpiexec -n 4
-MPIEXEC_TP6     = mpiexec -n 8
+MPIEXEC_TP6     = mpiexec --use-hwthread-cpus -n 8
 EXEC_TP7_VERIF     =
 MPIEXEC_TP7        = mpiexec -n 4
 MPIEXEC_TP7_CREAT  = mpiexec -n 1
