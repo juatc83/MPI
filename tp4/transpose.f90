@@ -36,12 +36,6 @@ PROGRAM transpose
   ! Validation du type type_transpose
   call MPI_TYPE_COMMIT(type_transpose,code)
 
-  !Construction du type derive type_transpose pour transposer la
-  !matrice A composee de nb_lignes et de nb_colonnes
-  call MPI_TYPE_VECTOR(nb_colonnes,1,nb_lignes, MPI_REAL ,type_transpose,code)
-  !Validation du type cree type_transpose
-  call MPI_TYPE_COMMIT(type_transpose,code)
-
   IF (rang == 0) THEN
     !Initialisation de la matrice A sur le processus 0
     A(:,:) = RESHAPE( (/ (i,i=1,nb_lignes*nb_colonnes) /), &

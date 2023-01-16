@@ -7,9 +7,9 @@
 ! Remarques :
 ! ---------
 !
-!   * On veut r�aliser le produit de matrices C = A * B en parall�le.
+!   * On veut realiser le produit de matrices C = A * B en parallele.
 !
-!   * On suppose que ces matrices sont carr�es et que leur ordre N
+!   * On suppose que ces matrices sont carrees et que leur ordre N
 !     est divisible par le nombre Nprocs de processus.
 !
 !   * Le processus 0 initialise les matrices A et B qu'il distribue
@@ -18,14 +18,14 @@
 !   * La distribution de A se fait par bandes horizontales.
 !     La distribution de B se fait par bandes verticales.
 !
-!   * Chaque processus poss�de une bande des matrices A et B.
+!   * Chaque processus possede une bande des matrices A et B.
 !
 !   * Chaque processus calcule ainsi un bloc de la diagonale principale
-!     de C avec les �l�ments qu'il poss�de. Le calcul des blocs
-!     extra-diagonaux n�cessite des communications avec les autres
+!     de C avec les elements qu'il possede. Le calcul des blocs
+!     extra-diagonaux necessite des communications avec les autres
 !     processus.
 !
-!   * En fait, l'op�ration se reduit ici � un produit de matrices par bloc.
+!   * En fait, l'operation se reduit ici e un produit de matrices par bloc.
 
 program produit_matrices
 
@@ -45,29 +45,32 @@ program produit_matrices
   call MPI_INIT(code)
   call MPI_COMM_RANK(MPI_COMM_WORLD, rang, code)
   call MPI_COMM_SIZE(MPI_COMM_WORLD, Nprocs, code)
-
+  
   if (rang == 0) then
-    print *, 'Entrez l''ordre N global des matrices :'
-    read *,N
-
+    print *, 'Entrez l''ordre N global des matrices : (non : ca sera 64)'
+    N = 32
+    
     ! Il faut que N soit divisible par Nprocs
     if ( mod(N, Nprocs) == 0 ) then
       NL = N / Nprocs
-
-      ! Le processus 0 diffuse N � tous les autres processus
-  
+      
+      ! Le processus 0 diffuse N et NL a tous les autres processus
+      call MPI_BCAST(N, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, code)
+      call MPI_BCAST(NL, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, code)
     else
       print *, 'N n''est pas divisible par Nprocs'
-      ! On arrete l'execution
       
+      ! On arrete l'execution
+      call MPI_ABORT(MPI_COMM_WORLD, 1, code)
+    
     end if
   end if
 
   ! Le processus 0 initialise les matrices A et B
   if (rang == 0) then
-    ! Allocation dynamique de m�moire, entre autres, des matrices A, B et C
+    ! Allocation dynamique de memoire, entre autres, des matrices A, B et C
     allocate( A(N,N), B(N,N), C(N,N), CC(N,N) )
-
+    
     ! Initialisation de A et B
     call RANDOM_NUMBER(A)
     call RANDOM_NUMBER(B)
@@ -75,33 +78,50 @@ program produit_matrices
     ! Calcul monoprocesseur du produit matriciel A*B
     CC(:,:) = matmul(A(:,:), B(:,:))
 
+      ! Allocation dynamique de memoire des divers tableaux locaux
+    allocate( AL(NL,N), BL(N,NL), CL(N,NL), TEMP(NL,N) )
+    print*,'ok_alloc'
   end if
 
-  ! Allocation dynamique de m�moire des divers tableaux locaux
-  allocate( AL(NL,N), BL(N,NL), CL(N,NL), TEMP(NL,N) )
+
 
   call MPI_TYPE_SIZE(MPI_REAL, taille_type_reel, code)
 
   ! Construction du type qui correspond a 1 bloc de NL lignes et N colonnes
+  call MPI_TYPE_VECTOR(N,NL,N,MPI_REAL,type_tranche,code)
+  ! Validation du type type_tranche
+  call MPI_TYPE_COMMIT(type_tranche,code)
 
+  if(rang==0)then
+    ! Le processus 0 distribue dans AL les tranches horizontales de la matrice A
+    do k = 0, Nprocs-1
+      call MPI_SEND(A(k*NL+1,:), 1, type_tranche, k, etiquette, MPI_COMM_WORLD, code)
+    end do
+    print*,'send_ok'
+    ! Le processus 0 distribue dans BL les tranches verticales de la matrice B
+    do k = 0, Nprocs-1
+      call MPI_SEND(B(:,k*NL+1), 1, type_tranche, k, etiquette, MPI_COMM_WORLD, code)
+    end do
 
-  ! Le processus 0 distribue dans AL les tranches horizontales de la matrice A
-
-
-  ! Le processus 0 distribue dans BL les tranches verticales de la matrice B
+  ! Les autres processus recoivent les informations
+  else
+    call MPI_RECV(AL, 1, type_tranche, 0, etiquette, MPI_COMM_WORLD, statut, code)
+    call MPI_RECV(BL, 1, type_tranche, 0, etiquette, MPI_COMM_WORLD, statut, code)
+  end if
 
 
   ! Calcul des blocs diagonaux de la matrice resultante.
   CL(rang*NL+1:(rang+1)*NL,:) = matmul( AL(:,:), BL(:,:) )
 
-  ! Premier algorithme (deux fois plus co�teux que le second)
+  ! Premier algorithme (deux fois plus coeteux que le second)
   do k = 0, Nprocs-1
     ! Chaque processus ENVOIE sa tranche AL au processus k
-    ! et RE�OIT dans TEMP la tranche AL du processus k
+    ! et RECOIT dans TEMP la tranche AL du processus k
     if (rang /= k) then
+      call MPI_SEND(AL, 1, type_tranche, k, etiquette, MPI_COMM_WORLD, code)
+      call MPI_RECV(TEMP, 1, type_tranche, k, etiquette, MPI_COMM_WORLD, statut, code)
 
-
-      ! Chaque processus calcule les blocs situ�s au-dessus
+      ! Chaque processus calcule les blocs situes au-dessus
       ! et en dessous du bloc de la diagonale principale
       CL(k*NL+1:(k+1)*NL,:)=matmul(TEMP(:,:),BL(:,:))
     end if
@@ -111,23 +131,23 @@ program produit_matrices
 !  rang_precedent = mod(Nprocs+rang-1,Nprocs)
 !  rang_suivant   = mod(rang+1,Nprocs)
 !  do k = 1, Nprocs-1
-!    ! Chaque processus ENVOIE sa tranche AL au processus pr�c�dent
-!    ! et RE�OIT la tranche AL du processus suivant (mais les contenus changent)
+!    ! Chaque processus ENVOIE sa tranche AL au processus precedent
+!    ! et REeOIT la tranche AL du processus suivant (mais les contenus changent)
 ! 
 !
-!    ! Chaque processus calcule les blocs situ�s au-dessus
+!    ! Chaque processus calcule les blocs situes au-dessus
 !    ! et en dessous du bloc de la diagonale principale
 !    CL(mod(rang+k,Nprocs)*NL+1:(mod(rang+k,Nprocs)+1)*NL,:)=matmul(AL(:,:),BL(:,:))
 !  end do
 
   ! Le processus 0 collecte les tranches CL de tous les processus
-  ! pour former la matrice r�sultante C
+  ! pour former la matrice resultante C
   
 
-  ! Les tableaux locaux sont d�sormais inutiles
+  ! Les tableaux locaux sont desormais inutiles
   deallocate( AL, BL, CL, TEMP )
 
-  ! V�rification des r�sultats
+  ! Verification des resultats
   if (rang == 0) then
     allocate( E(N,N) )
     E(:,:) = abs(C(:,:) - CC(:,:))
