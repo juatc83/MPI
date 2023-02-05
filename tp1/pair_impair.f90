@@ -1,5 +1,5 @@
 
-program qui_je_suis
+program qui_suis_je
 
     use mpi
 
@@ -19,4 +19,4 @@ program qui_je_suis
     
     call MPI_FINALIZE (code)
 
-end program qui_je_suis
+end program qui_suis_je
