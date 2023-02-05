@@ -1,0 +1,12 @@
+mpif90 -c  ping_pong_3.f90
+mpif90 -o ping_pong_3  ping_pong_3.o
+mpiexec -n 2 ./ping_pong_3
+Moi, processus 0, j'ai envoye et recu        0 valeurs en 0.000069 secondes, soit avec un debit de    0.00 Mo/s.
+Moi, processus 0, j'ai envoye et recu        1 valeurs (derniere = 0.32) du processus 1 en 0.000015 secondes, soit avec un debit de    1.07 Mo/s.
+Moi, processus 0, j'ai envoye et recu       10 valeurs (derniere = 0.84) du processus 1 en 0.000006 secondes, soit avec un debit de   25.28 Mo/s.
+Moi, processus 0, j'ai envoye et recu      100 valeurs (derniere = 0.35) du processus 1 en 0.000030 secondes, soit avec un debit de   53.99 Mo/s.
+Moi, processus 0, j'ai envoye et recu     1000 valeurs (derniere = 0.42) du processus 1 en 0.000063 secondes, soit avec un debit de  253.67 Mo/s.
+Moi, processus 0, j'ai envoye et recu    10000 valeurs (derniere = 0.72) du processus 1 en 0.000054 secondes, soit avec un debit de 2978.74 Mo/s.
+Moi, processus 0, j'ai envoye et recu   100000 valeurs (derniere = 0.46) du processus 1 en 0.000339 secondes, soit avec un debit de 4714.13 Mo/s.
+Moi, processus 0, j'ai envoye et recu  1000000 valeurs (derniere = 0.66) du processus 1 en 0.004602 secondes, soit avec un debit de 3476.71 Mo/s.
+Moi, processus 0, j'ai envoye et recu  7000000 valeurs (derniere = 0.78) du processus 1 en 0.025710 secondes, soit avec un debit de 4356.24 Mo/s.
