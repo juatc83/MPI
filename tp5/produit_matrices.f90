@@ -132,44 +132,41 @@ program produit_matrices
 
     temps_debut=MPI_WTIME()
 
-  ! Premier algorithme (deux fois plus coûteux que le second)
-   if (rang.eq.0 .and. i.eq.1)  then
-   print*, "PREMIER ALGORITHME"
-   end if
-   do k = 0, Nprocs-1
-     ! Chaque processus ENVOIE sa tranche AL au processus k
-     ! et REÇOIT dans TEMP la tranche AL du processus k
-     if (rang /= k) then
-      ! On peut utiliser MPI_SENDRECV car les messages sont de même taille
-      ! et que les processus envoient et reçoivent en même temps
-       call MPI_SENDRECV(AL,   NL*N, MPI_REAL, k, etiquette, &
-                         TEMP, NL*N, MPI_REAL, k, etiquette, MPI_COMM_WORLD, statut, code)
-
-       ! Chaque processus calcule les blocs situés au-dessus
-       ! et en dessous du bloc de la diagonale principale
-       CL(k*NL+1:(k+1)*NL,:)=matmul(TEMP(:,:),BL(:,:))
-     end if
-   end do
-
-  !   ! Second algorithme
-  !  if (rang.eq.0 .and. i.eq.1) then
-  !  print*, "SECOND ALGORITHME"
+  ! ! Premier algorithme (deux fois plus coûteux que le second)
+  !  if (rang.eq.0 .and. i.eq.1)  then
+  !     print*, "PREMIER ALGORITHME"
   !  end if
-  !   rang_precedent = mod(Nprocs+rang-1,Nprocs)
-  !   rang_suivant   = mod(rang+1,Nprocs)
-  !   do k = 1, Nprocs-1
-  !     ! Chaque processus ENVOIE sa tranche AL au processus précédent
-  !     ! et REÇOIT la tranche AL du processus suivant (mais les contenus changent)
+  !  do k = 0, Nprocs-1
+  !    ! Chaque processus ENVOIE sa tranche AL au processus k
+  !    ! et REÇOIT dans TEMP la tranche AL du processus k
+  !    if (rang /= k) then
+  !     ! On peut utiliser MPI_SENDRECV car les messages sont de même taille
+  !     ! et que les processus envoient et reçoivent en même temps
+  !      call MPI_SENDRECV(AL,   NL*N, MPI_REAL, k, etiquette, &
+  !                        TEMP, NL*N, MPI_REAL, k, etiquette, MPI_COMM_WORLD, statut, code)
 
-  !     ! On peut utiliser MPI_SENDRECV_REPLACE car les messages sont de même taille
-  !     ! et que les processus envoient et reçoivent en même temps (mais les contenus changent)
-  !     call MPI_SENDRECV_REPLACE(AL, NL*N, MPI_REAL, rang_precedent, etiquette, &
-  !                               rang_suivant, etiquette, MPI_COMM_WORLD, statut, code)
+  !      ! Chaque processus calcule les blocs situés au-dessus
+  !      ! et en dessous du bloc de la diagonale principale
+  !      CL(k*NL+1:(k+1)*NL,:)=matmul(TEMP(:,:),BL(:,:))
+  !    end if
+  !  end do
 
-  !     ! Chaque processus calcule les blocs situés au-dessus
-  !     ! et en dessous du bloc de la diagonale principale
-  !     CL(mod(rang+k,Nprocs)*NL+1:(mod(rang+k,Nprocs)+1)*NL,:)=matmul(AL(:,:),BL(:,:))
-  !   end do
+    ! Second algorithme
+   if (rang.eq.0 .and. i.eq.1) then
+   print*, "SECOND ALGORITHME"
+   end if
+    rang_precedent = mod(Nprocs+rang-1,Nprocs)
+    rang_suivant   = mod(rang+1,Nprocs)
+    do k = 1, Nprocs-1
+      ! On peut utiliser MPI_SENDRECV_REPLACE car les messages sont de même taille
+      ! et que les processus envoient et reçoivent en même temps (mais les contenus changent)
+      call MPI_SENDRECV_REPLACE(AL, NL*N, MPI_REAL, rang_precedent, etiquette, &
+                                rang_suivant, etiquette, MPI_COMM_WORLD, statut, code)
+
+      ! Chaque processus calcule les blocs situés au-dessus
+      ! et en dessous du bloc de la diagonale principale
+      CL(mod(rang+k,Nprocs)*NL+1:(mod(rang+k,Nprocs)+1)*NL,:)=matmul(AL(:,:),BL(:,:))
+    end do
 
     temps_fin=MPI_WTIME()
 

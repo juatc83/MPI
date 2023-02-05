@@ -1,19 +1,10 @@
-mpif90 -c  produit_matrices.f90
-mpif90 -o produit_matrices  produit_matrices.o
-mpiexec --use-hwthread-cpus -n 8 ./produit_matrices
-
-                    On essaye plusieurs valeurs de N à la suite : 
-                    N = 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096
-                    avec un total de huit processeurs.
-  
- SECOND ALGORITHME
-Pour la valeur N =    8 le calcul est juste et effectue en 0.033791 secondes
-Pour la valeur N =   16 le calcul est juste et effectue en 0.009508 secondes
-Pour la valeur N =   32 le calcul est juste et effectue en 0.000396 secondes
-Pour la valeur N =   64 le calcul est juste et effectue en 0.001768 secondes
-Pour la valeur N =  128 le calcul est juste et effectue en 0.000277 secondes
-Pour la valeur N =  256 le calcul est juste et effectue en 0.009899 secondes
-Pour la valeur N =  512 le calcul est juste et effectue en 0.033926 secondes
-Pour la valeur N = 1024 le calcul est juste et effectue en 0.090012 secondes
-Pour la valeur N = 2048 le calcul est juste et effectue en 0.421004 secondes
-Pour la valeur N = 4096 le calcul est juste et effectue en 2.916628 secondes
+0.033791 8
+0.009508 16
+0.000396 32
+0.001768 64
+0.000277 128
+0.009899 256
+0.033926 512
+0.090012 1024
+0.421004 2048
+2.916628 4096
