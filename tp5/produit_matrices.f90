@@ -158,8 +158,11 @@ program produit_matrices
     rang_precedent = mod(Nprocs+rang-1,Nprocs)
     rang_suivant   = mod(rang+1,Nprocs)
     do k = 1, Nprocs-1
-      ! On peut utiliser MPI_SENDRECV_REPLACE car les messages sont de même taille
-      ! et que les processus envoient et reçoivent en même temps (mais les contenus changent)
+      ! Chaque processus ENVOIE sa tranche AL au processus précédent
+      ! et REÇOIT la tranche AL du processus suivant (mais les contenus changent)
+
+          ! On peut utiliser MPI_SENDRECV_REPLACE car les messages sont de même taille
+          ! et que les processus envoient et reçoivent en même temps (mais les contenus changent)
       call MPI_SENDRECV_REPLACE(AL, NL*N, MPI_REAL, rang_precedent, etiquette, &
                                 rang_suivant, etiquette, MPI_COMM_WORLD, statut, code)
 
